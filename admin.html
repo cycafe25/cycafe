@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — Cycafe</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="images/cycafe-icon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+    --brand:#5c43cd;--brand-dark:#4832a8;--brand-light:#ede9fb;
+    --sidebar:#0f0d1e;--surface:#fff;--bg:#f4f3ff;
+    --text:#1a1730;--muted:#6b7280;--border:#e5e7eb;
+    --success:#10b981;--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+
+/* LOGIN */
+#login-page{position:fixed;inset:0;background:linear-gradient(135deg,#0f0d1e 0%,#1e1640 40%,#2d1f6e 100%);display:flex;align-items:center;justify-content:center;z-index:9999}
+#login-page.hidden{display:none}
+.login-card{background:rgba(255,255,255,.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:44px;width:100%;max-width:420px;box-shadow:0 40px 80px rgba(0,0,0,.5)}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px}
+.login-logo img{width:52px;height:52px;border-radius:14px;object-fit:cover;border:2px solid rgba(255,255,255,.2)}
+.login-logo h1{color:#fff;font-size:22px;font-weight:800}
+.login-logo p{color:rgba(255,255,255,.45);font-size:12px}
+.lbl{display:block;color:rgba(255,255,255,.65);font-size:11px;font-weight:700;margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px}
+.l-input{width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;color:#fff;font-size:14px;font-family:'Inter',sans-serif;padding:12px 15px;outline:none;transition:border-color .2s}
+.l-input:focus{border-color:var(--brand);background:rgba(92,67,205,.15)}
+.l-input::placeholder{color:rgba(255,255,255,.28)}
+.l-btn{width:100%;background:var(--brand);color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;margin-top:6px;transition:background .2s}
+.l-btn:hover{background:var(--brand-dark)}
+.l-btn:active{transform:scale(.98)}
+.l-err{color:#fca5a5;font-size:12px;text-align:center;margin-top:10px;display:none}
+.l-err.show{display:block}
+
+/* LAYOUT */
+#admin-app{display:flex;width:100%;min-height:100vh}
+#admin-app.hidden{display:none}
+.sidebar{width:240px;min-height:100vh;background:var(--sidebar);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s}
+.sb-head{padding:18px 14px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px}
+.sb-head img{width:36px;height:36px;border-radius:10px;object-fit:cover;border:1.5px solid rgba(255,255,255,.15)}
+.sb-head h2{color:#fff;font-size:14px;font-weight:700}
+.sb-head p{color:rgba(255,255,255,.35);font-size:10px}
+.sb-nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav-lbl{color:rgba(255,255,255,.28);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:10px 10px 5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;cursor:pointer;margin-bottom:1px;transition:background .15s,color .15s;color:rgba(255,255,255,.5);font-size:13px;font-weight:500;border:none;background:none;width:100%;text-align:left;font-family:'Inter',sans-serif;text-decoration:none}
+.nav-item:hover{background:rgba(92,67,205,.18);color:#fff}
+.nav-item.active{background:rgba(92,67,205,.35);color:#c4b5fd;font-weight:600}
+.nav-icon{width:18px;text-align:center;font-size:14px}
+.nav-badge{margin-left:auto;background:var(--brand);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px}
+.sb-foot{padding:12px 8px;border-top:1px solid rgba(255,255,255,.07)}
+.logout-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:none;border:none;color:rgba(255,255,255,.45);font-size:13px;font-weight:500;cursor:pointer;width:100%;font-family:'Inter',sans-serif;transition:background .15s,color .15s}
+.logout-btn:hover{background:rgba(239,68,68,.15);color:#fca5a5}
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:17px;font-weight:700}
+.topbar-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.admin-badge{display:inline-flex;align-items:center;gap:6px;background:var(--brand-light);color:var(--brand);font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;border:1.5px solid rgba(92,67,205,.2)}
+.pane{display:none;padding:24px;flex:1}
+.pane.active{display:block}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.s-icon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.s-val{font-size:22px;font-weight:800}
+.s-lbl{font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.card-hd{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.chip{display:inline-flex;align-items:center;background:var(--brand-light);color:var(--brand);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;gap:4px}
+.chip-green{background:#ecfdf5;color:#059669}
+.chip-amber{background:#fffbeb;color:#d97706}
+.chip-red{background:#fef2f2;color:#dc2626}
+.chip-blue{background:#eff6ff;color:#2563eb}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead tr{background:#f9fafb}
+th{padding:9px 13px;font-size:10px;font-weight:700;color:var(--muted);text-align:left;text-transform:uppercase;letter-spacing:.4px}
+td{padding:11px 13px;font-size:12px;color:var(--text);vertical-align:middle}
+tbody tr{border-top:1px solid #f3f4f6}
+tbody tr:hover{background:#fafafa}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9px;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;border:none;transition:all .15s}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-dark)}
+.btn-success{background:#ecfdf5;color:var(--success);border:1px solid #a7f3d0}
+.btn-success:hover{background:#d1fae5}
+.btn-danger{background:#fef2f2;color:var(--danger);border:1px solid #fecaca}
+.btn-danger:hover{background:#fee2e2}
+.btn-outline{background:#fff;color:var(--text);border:1px solid var(--border)}
+.btn-outline:hover{background:var(--bg)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:20px;padding:26px;width:100%;max-width:500px;box-shadow:0 30px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:9px}
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:11px;font-weight:600;color:#374151;margin-bottom:5px}
+.fi,.fs,.fta{width:100%;background:#f9fafb;border:1.5px solid var(--border);border-radius:9px;padding:9px 11px;font-size:13px;font-family:'Inter',sans-serif;color:var(--text);outline:none;transition:border-color .2s}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--brand);background:#fff}
+.fta{resize:vertical;min-height:72px}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.content-editor{max-width:760px}.editor-section{margin:16px 0;padding:16px;border:1px solid var(--border);border-radius:12px;background:#fafbff}.editor-section h4{margin:0 0 12px;font-size:13px;color:var(--brand)}.editor-hint{font-size:11px;color:var(--muted);margin:5px 0 10px}.authority-options{max-height:220px;overflow:auto;margin-top:8px}.authority-options label{display:flex;gap:8px;align-items:flex-start;padding:6px;font-size:12px}.authority-options label[hidden]{display:none}.authority-options input{margin-top:2px;flex-shrink:0}.authority-picker summary{cursor:pointer;font-size:12px;font-weight:600;padding:9px;background:#f3f0ff;border-radius:8px}.editor-section[hidden],.fg[hidden]{display:none}
+.st-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase}
+.st-pending{background:#fffbeb;color:#d97706;border:1px solid #fde68a}
+.st-progress{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+.st-completed{background:#ecfdf5;color:#059669;border:1px solid #a7f3d0}
+.st-cancelled{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.st-sel{font-size:11px;font-weight:600;padding:4px 8px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-family:'Inter',sans-serif;color:var(--text);outline:none}
+.srch{padding:8px 12px 8px 32px;border:1.5px solid var(--border);border-radius:9px;font-size:12px;font-family:'Inter',sans-serif;color:var(--text);background:#f9fafb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236b7280'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E") no-repeat 9px center / 13px;outline:none;min-width:180px}
+.srch:focus{border-color:var(--brand);background-color:#fff}
+#toast{position:fixed;bottom:22px;right:22px;background:#1a1730;color:#fff;padding:11px 16px;border-radius:12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:9px;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:9999;transform:translateY(100px);opacity:0;transition:transform .3s,opacity .3s;max-width:320px}
+#toast.show{transform:translateY(0);opacity:1}
+.empty-state{padding:48px 24px;text-align:center}
+.empty-state i{font-size:36px;color:#d1d5db;margin-bottom:10px;display:block}
+.empty-state p{font-size:13px;color:var(--muted)}
+.ib{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;border:none;cursor:pointer;font-size:12px;transition:background .15s;background:transparent}
+.ib-danger{color:var(--danger)}.ib-danger:hover{background:#fef2f2}
+.ib-success{color:var(--success)}.ib-success:hover{background:#ecfdf5}
+.ql-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:13px;margin-bottom:24px}
+.ql-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:16px;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .15s;display:flex;align-items:center;gap:13px}
+.ql-card:hover{border-color:var(--brand);box-shadow:0 4px 18px rgba(92,67,205,.12);transform:translateY(-2px)}
+.ql-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.ql-text h4{font-size:12px;font-weight:700}.ql-text p{font-size:11px;color:var(--muted);margin-top:2px}
+.rpt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.rpt-card{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:22px;text-align:center}
+.r-icon{font-size:26px;margin-bottom:8px}
+.r-val{font-size:26px;font-weight:800}
+.r-lbl{font-size:12px;color:var(--muted);margin-top:3px}
+.hidden{display:none !important}
+#menu-toggle{display:none}
+.sb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;display:none}
+.sb-overlay.show{display:block}
+@media(max-width:768px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.open{transform:translateX(0)}
+    .main{margin-left:0}
+    .pane{padding:14px}
+    .fg2{grid-template-columns:1fr}
+    #menu-toggle{display:flex}
+    .stats-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <img src="images/cycafe-icon.png" alt="Cycafe" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 48%22%3E%3Crect fill=%22%235c43cd%22 width=%2248%22 height=%2248%22 rx=%2212%22/%3E%3Ctext x=%2224%22 y=%2232%22 font-family=%22Arial%22 font-size=%2220%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22%3EC%3C/text%3E%3C/svg%3E'">
+      <div><h1>Cycafe Admin</h1><p>Authorized Personnel Only</p></div>
+    </div>
+    <form id="login-form" autocomplete="off">
+      <div class="fg">
+        <label class="lbl" for="l-user"><i class="fa-solid fa-user-shield" style="margin-right:5px;opacity:.7"></i>Firebase Admin Email</label>
+        <input type="email" id="l-user" class="l-input" placeholder="admin@cycafe.in (or authorized admin email)" autocomplete="email" required>
+      </div>
+      <div class="fg" style="margin-bottom:20px">
+        <label class="lbl" for="l-pass"><i class="fa-solid fa-lock" style="margin-right:5px;opacity:.7"></i>Firebase Password</label>
+        <input type="password" id="l-pass" class="l-input" placeholder="Enter Firebase password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="l-btn"><i class="fa-solid fa-shield-halved" style="margin-right:7px"></i>Login to Admin Panel</button>
+      <p id="l-err" class="l-err"><i class="fa-solid fa-circle-xmark"></i> Invalid credentials. Please try again.</p>
+    </form>
+    <p style="color:rgba(255,255,255,.3);font-size:11px;text-align:center;margin-top:22px">&copy; 2025 Cycafe &nbsp;·&nbsp; Firebase Cloud Authentication Only</p>
+  </div>
+</div>
+
+<div class="sb-overlay" id="sb-overlay" onclick="closeMobSidebar()"></div>
+
+<!-- ADMIN APP -->
+<div id="admin-app" class="hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <img src="images/cycafe-icon.png" alt="Logo" onerror="this.style.display='none'">
+      <div><h2>Cycafe Admin</h2><p>Control Center</p></div>
+    </div>
+    <nav class="sb-nav">
+      <div class="nav-lbl">Main</div>
+      <button class="nav-item active" id="nav-dashboard" onclick="showPane('dashboard')"><span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>Dashboard</button>
+      <div class="nav-lbl">Management</div>
+      <button class="nav-item" id="nav-operators" onclick="showPane('operators')"><span class="nav-icon"><i class="fa-solid fa-user-tie"></i></span>Operators<span class="nav-badge" id="op-nav-badge">0</span></button>
+      <button class="nav-item" id="nav-customers" onclick="showPane('customers')"><span class="nav-icon"><i class="fa-solid fa-users"></i></span>Customers<span class="nav-badge" id="cust-nav-badge">0</span></button>
+      <button class="nav-item" id="nav-transactions" onclick="showPane('transactions')"><span class="nav-icon"><i class="fa-solid fa-indian-rupee-sign"></i></span>Transactions</button>
+      <button class="nav-item" id="nav-services" onclick="showPane('services')"><span class="nav-icon"><i class="fa-solid fa-layer-group"></i></span>Services</button>
+      <div class="nav-lbl">Content</div>
+      <button class="nav-item" id="nav-schemes" onclick="showPane('schemes')"><span class="nav-icon"><i class="fa-solid fa-newspaper"></i></span>Govt Schemes</button>
+      <button class="nav-item" id="nav-jobs" onclick="showPane('jobs')"><span class="nav-icon"><i class="fa-solid fa-briefcase"></i></span>Job Notices</button>
+      <div class="nav-lbl">Analytics</div>
+      <button class="nav-item" id="nav-reports" onclick="showPane('reports')"><span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>Reports</button>
+      <div class="nav-lbl">Settings</div>
+      <button class="nav-item" id="nav-settings" onclick="showPane('settings')"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span>Settings</button>
+    </nav>
+    <div class="sb-foot">
+      <a href="index.html" target="_blank" class="nav-item" style="margin-bottom:4px"><span class="nav-icon"><i class="fa-solid fa-globe"></i></span>View Website</a>
+      <button class="logout-btn" onclick="doLogout()"><span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button id="menu-toggle" onclick="toggleMobSidebar()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text)"><i class="fa-solid fa-bars"></i></button>
+        <div>
+          <div class="topbar-title" id="tb-title">Dashboard</div>
+          <div class="topbar-sub" id="tb-sub">Connected to Firebase Cloud Database</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="btn btn-outline" id="sync-btn" onclick="loadFirebaseData(true)" title="Fetch and synchronize live data from Firebase Firestore" style="padding:6px 12px;font-size:11px">
+          <i class="fa-solid fa-arrows-rotate" id="sync-icon"></i> <span id="sync-lbl">Sync Firebase</span>
+        </button>
+        <div class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Admin</div>
+        <span id="tb-date" style="font-size:11px;color:var(--muted)"></span>
+      </div>
+    </div>
+
+    <!-- ====== DASHBOARD ====== -->
+    <div class="pane active" id="pane-dashboard">
+      <div class="stats-grid" id="dash-stats"></div>
+      <div class="ql-grid">
+        <div class="ql-card" onclick="showPane('operators')">
+          <div class="ql-icon" style="background:#ede9fb;color:#5c43cd"><i class="fa-solid fa-user-tie"></i></div>
+          <div class="ql-text"><h4>View Operators</h4><p>Manage CSC staff & centers</p></div>
+        </div>
+        <div class="ql-card" onclick="showPane('customers')">
+          <div class="ql-icon" style="background:#ecfdf5;color:#059669"><i class="fa-solid fa-users"></i></div>
+          <div class="ql-text"><h4>Manage Customers</h4><p>View & edit Firebase records</p></div>
+        </div>
+        <div class="ql-card" onclick="showPane('transactions')">
+          <div class="ql-icon" style="background:#eff6ff;color:#2563eb"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+          <div class="ql-text"><h4>Expense & Income</h4><p>Audit operator financial reports</p></div>
+        </div>
+        <div class="ql-card" onclick="showPane('reports')">
+          <div class="ql-icon" style="background:#fff7ed;color:#ea580c"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="ql-text"><h4>Analytics & Leaderboard</h4><p>Operator revenue & rankings</p></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-hd">
+          <div class="card-title"><i class="fa-solid fa-users" style="color:var(--brand)"></i>Recent Customers (Firebase)</div>
+          <button class="btn btn-outline" onclick="showPane('customers')"><i class="fa-solid fa-arrow-right"></i> View All</button>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>#</th><th>Customer</th><th>Mobile</th><th>Service</th><th>Amount</th><th>Operator / Center</th><th>Status</th></tr></thead>
+          <tbody id="dash-custs"></tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><i class="fa-solid fa-receipt" style="color:var(--success)"></i>Recent Transactions & Expenses (Firebase)</div>
+          <button class="btn btn-outline" onclick="showPane('transactions')"><i class="fa-solid fa-arrow-right"></i> View All</button>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>#</th><th>Date</th><th>Operator</th><th>Particulars</th><th>Category</th><th>Type</th><th>Amount</th><th>Method</th></tr></thead>
+          <tbody id="dash-txns"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ====== OPERATORS ====== -->
+    <div class="pane" id="pane-operators">
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-hd">
+          <div class="card-title"><i class="fa-solid fa-user-tie" style="color:var(--brand)"></i>CSC Operators & Staff Network<span class="chip" id="op-chip">0</span></div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <input type="text" class="srch" id="op-srch" placeholder="Search operator, email, center..." oninput="renderOperators()">
+            <button class="btn btn-outline" onclick="loadFirebaseData(true)"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>#</th><th>Operator / Center</th><th>Email</th><th>Mobile</th><th>Joined Date</th><th>Customers</th><th>Total Income</th><th>Total Expense</th><th>Net Profit</th><th>Actions</th></tr></thead>
+          <tbody id="op-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ====== CUSTOMERS ====== -->
+    <div class="pane" id="pane-customers">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><i class="fa-solid fa-users" style="color:var(--brand)"></i>Customer Management (Firebase)<span class="chip" id="cust-chip">0</span></div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <input type="text" class="srch" id="cust-srch" placeholder="Search name, mobile, service, operator..." oninput="renderCustomers()">
+            <select class="fs" id="cust-op-flt" style="width:auto;padding:7px 9px;font-size:12px" onchange="renderCustomers()">
+              <option value="all">All Operators</option>
+            </select>
+            <select class="fs" id="cust-flt" style="width:auto;padding:7px 9px;font-size:12px" onchange="renderCustomers()">
+              <option value="all">All Status</option>
+              <option value="Pending">⏳ Pending</option>
+              <option value="Paid">💳 Paid</option>
+              <option value="In Progress">🔄 In Progress</option>
+              <option value="Completed">✅ Completed</option>
+              <option value="Cancelled">❌ Cancelled</option>
+            </select>
+            <button class="btn btn-primary" onclick="openModal('add-cust-modal')"><i class="fa-solid fa-user-plus"></i> Add Customer</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>#</th><th>Customer</th><th>Mobile</th><th>Service</th><th>Amount</th><th>Operator / Center</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="cust-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ====== TRANSACTIONS ====== -->
+    <div class="pane" id="pane-transactions">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><i class="fa-solid fa-indian-rupee-sign" style="color:var(--success)"></i>Transaction & Expense Ledger (Firebase)<span class="chip chip-green" id="txn-chip">0</span></div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <input type="text" class="srch" id="txn-srch" placeholder="Search transaction, operator..." oninput="renderTransactions()">
+            <select class="fs" id="txn-op-flt" style="width:auto;padding:7px 9px;font-size:12px" onchange="renderTransactions()">
+              <option value="all">All Operators</option>
+            </select>
+            <select class="fs" id="txn-flt" style="width:auto;padding:7px 9px;font-size:12px" onchange="renderTransactions()">
+              <option value="all">All Types</option>
+              <option value="Income">Income Only</option>
+              <option value="Expense">Expense Only</option>
+            </select>
+            <button class="btn btn-success" onclick="openTxnModal('Income')"><i class="fa-solid fa-arrow-trend-up"></i> Add Income</button>
+            <button class="btn btn-danger" onclick="openTxnModal('Expense')"><i class="fa-solid fa-arrow-trend-down"></i> Add Expense</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>#</th><th>Date</th><th>Operator</th><th>Particulars</th><th>Category</th><th>Type</th><th>Amount</th><th>Method</th><th>Del</th></tr></thead>
+          <tbody id="txn-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ====== SERVICES ====== -->
+    <div class="pane" id="pane-services">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title"><i class="fa-solid fa-layer-group" style="color:var(--info)"></i>Website Services<span class="chip chip-blue" id="srv-chip">0</span></div>
+          <div style="display:flex;gap:7px">
+            <input type="text" class="srch" id="srv-srch" placeholder="Search services..." oninput="renderServices()">
+            <button class="btn btn-primary" onclick="openServiceEditor()"><i class="fa-solid fa-plus"></i> Add Service</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>#</th><th>Service Name</th><th>Category</th><th>URL</th><th>Badge</th><th>Del</th></tr></thead>
+          <tbody id="srv-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ====== GOVT SCHEMES ====== -->
+    <div class="pane" id="pane-schemes">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+        <div><h2 style="font-size:16px;font-weight:700">Government Scheme Updates</h2><p style="font-size:12px;color:var(--muted)">Publish welfare schemes visible on the website</p></div>
+        <button class="btn btn-primary" onclick="openNoticeModal('scheme')"><i class="fa-solid fa-plus"></i> Add Scheme</button>
+      </div>
+      <div id="schemes-list" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+
+    <!-- ====== JOB NOTICES ====== -->
+    <div class="pane" id="pane-jobs">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+        <div><h2 style="font-size:16px;font-weight:700">Job Notice Board</h2><p style="font-size:12px;color:var(--muted)">Post government recruitment & job alerts</p></div>
+        <button class="btn btn-primary" onclick="openNoticeModal('notice')"><i class="fa-solid fa-plus"></i> Post Job Alert</button>
+      </div>
+      <div id="jobs-list" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+
+    <!-- ====== REPORTS ====== -->
+    <div class="pane" id="pane-reports">
+      <div class="rpt-grid" style="margin-bottom:24px">
+        <div class="rpt-card"><div class="r-icon" style="color:var(--success)">💰</div><div class="r-val" style="color:var(--success)" id="r-income">₹0</div><div class="r-lbl">Total Network Income</div></div>
+        <div class="rpt-card"><div class="r-icon" style="color:var(--danger)">💸</div><div class="r-val" style="color:var(--danger)" id="r-expense">₹0</div><div class="r-lbl">Total Network Expense</div></div>
+        <div class="rpt-card"><div class="r-icon">📈</div><div class="r-val" id="r-profit">₹0</div><div class="r-lbl">Net Network Profit</div></div>
+        <div class="rpt-card"><div class="r-icon" style="color:var(--brand)">👥</div><div class="r-val" style="color:var(--brand)" id="r-custs">0</div><div class="r-lbl">Total Customers Served</div></div>
+        <div class="rpt-card"><div class="r-icon" style="color:#f59e0b">👔</div><div class="r-val" style="color:#f59e0b" id="r-operators">0</div><div class="r-lbl">Registered Operators</div></div>
+        <div class="rpt-card"><div class="r-icon" style="color:var(--info)">🛠️</div><div class="r-val" style="color:var(--info)" id="r-svcs">0</div><div class="r-lbl">Custom Services</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-hd">
+          <div class="card-title"><i class="fa-solid fa-ranking-star" style="color:var(--brand)"></i>Operator Performance & Revenue Leaderboard</div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Rank</th><th>Operator</th><th>Center Name</th><th>Customers Served</th><th>Income Generated</th><th>Expenses Logged</th><th>Net Profit</th><th>Action</th></tr></thead>
+          <tbody id="rpt-op-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ====== SETTINGS ====== -->
+    <div class="pane" id="pane-settings">
+      <div class="card" style="max-width:520px;margin-bottom:16px">
+        <div class="card-hd"><div class="card-title"><i class="fa-solid fa-fire" style="color:#f59e0b"></i>Firebase Admin Authentication</div></div>
+        <div style="padding:18px">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px">
+            Admin access is secured exclusively via <b>Firebase Cloud Authentication</b>. Hardcoded master passwords have been removed. Regular operator/customer accounts are rejected upon login.
+          </p>
+          <p style="font-size:12px;color:var(--muted);line-height:1.6">Access is checked against the Firebase <code>admins</code> collection using the signed-in account's UID. Email addresses and passwords are never stored in this website or in localStorage.</p>
+          <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px">To authorize another admin, create their Email/Password account in Firebase Authentication, then create <code>admins/USER_UID</code> in Firestore from the Firebase console.</p>
+        </div>
+      </div>
+      <div class="card" style="max-width:520px">
+        <div class="card-hd"><div class="card-title"><i class="fa-solid fa-cloud-arrow-down" style="color:var(--info)"></i>Firebase Data Management</div></div>
+        <div style="padding:18px;display:flex;flex-direction:column;gap:9px">
+          <button class="btn btn-outline" onclick="exportData()" style="justify-content:flex-start;gap:10px"><i class="fa-solid fa-file-arrow-down" style="color:var(--info)"></i> Export All Firebase Data (JSON)</button>
+          <button class="btn btn-outline" onclick="loadFirebaseData(true)" style="justify-content:flex-start;gap:10px"><i class="fa-solid fa-arrows-rotate" style="color:var(--success)"></i> Force Re-sync Firestore Cache</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+</div><!-- end admin-app -->
+
+<!-- ====== MODALS ====== -->
+
+<!-- Add Customer -->
+<div class="modal-overlay" id="add-cust-modal">
+  <div class="modal-box">
+    <div class="modal-title"><i class="fa-solid fa-user-plus" style="color:var(--brand)"></i>Add New Customer</div>
+    <form id="cust-form" onsubmit="saveCust(event)">
+      <div class="fg2">
+        <div class="fg"><label class="fl">Full Name *</label><input type="text" class="fi" id="c-name" placeholder="Customer name" required></div>
+        <div class="fg"><label class="fl">Mobile *</label><input type="tel" class="fi" id="c-mob" placeholder="10-digit mobile" required maxlength="10"></div>
+      </div>
+      <div class="fg2">
+        <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="c-email" placeholder="email@example.com"></div>
+        <div class="fg"><label class="fl">Service *</label>
+          <select class="fs" id="c-svc">
+            <option>PAN Card</option><option>Aadhaar Update</option><option>Passport Photo</option>
+            <option>Income Certificate</option><option>Caste Certificate</option>
+            <option>PMJAY / Ayushman</option><option>PM Kisan</option><option>Voter ID</option>
+            <option>Driving License</option><option>Birth Certificate</option><option>Death Certificate</option>
+            <option>PDF/Printing</option><option>Photo Editing</option><option>Online Form Fill</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg2">
+        <div class="fg"><label class="fl">Amount (₹) *</label><input type="number" class="fi" id="c-amt" placeholder="Service fee" required min="0"></div>
+        <div class="fg"><label class="fl">Status</label>
+          <select class="fs" id="c-sta">
+            <option value="Pending">⏳ Pending</option>
+            <option value="In Progress">🔄 In Progress</option>
+            <option value="Completed">✅ Completed</option>
+            <option value="Cancelled">❌ Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Operator / Center *</label><select class="fs" id="c-operator" required><option value="">Select operator after Firebase sync</option></select></div>
+      <div class="fg"><label class="fl">Notes</label><textarea class="fta" id="c-notes" placeholder="Any notes..."></textarea></div>
+      <div style="display:flex;gap:9px;justify-content:flex-end">
+        <button type="button" class="btn btn-outline" onclick="closeModal('add-cust-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Transaction -->
+<div class="modal-overlay" id="add-txn-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="txn-mtitle"><i class="fa-solid fa-indian-rupee-sign" style="color:var(--success)"></i>Add Transaction</div>
+    <form id="txn-form" onsubmit="saveTxn(event)">
+      <input type="hidden" id="txn-type" value="Income">
+      <div class="fg2">
+        <div class="fg"><label class="fl">Particulars / Customer *</label><input type="text" class="fi" id="t-name" placeholder="Name or description" required></div>
+        <div class="fg"><label class="fl">Amount (₹) *</label><input type="number" class="fi" id="t-amt" placeholder="Amount" required min="1"></div>
+      </div>
+      <div class="fg"><label class="fl">Operator / Center *</label><select class="fs" id="t-operator" required><option value="">Select operator after Firebase sync</option></select></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl">Category</label><input type="text" class="fi" id="t-cat" placeholder="PAN Card, Printing..." value="Service Fee"></div>
+        <div class="fg"><label class="fl">Payment Method</label>
+          <select class="fs" id="t-mth">
+            <option value="Cash">💵 Cash</option>
+            <option value="UPI">📱 UPI / GPay / PhonePe</option>
+            <option value="Bank Transfer">🏦 Bank Transfer</option>
+            <option value="Card">💳 Card</option>
+            <option value="Cheque">📄 Cheque</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:9px;justify-content:flex-end">
+        <button type="button" class="btn btn-outline" onclick="closeModal('add-txn-modal')">Cancel</button>
+        <button type="submit" class="btn btn-success" id="txn-sbtn"><i class="fa-solid fa-save"></i> Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Service -->
+<div class="modal-overlay" id="add-srv-modal">
+  <div class="modal-box content-editor">
+    <div class="modal-title"><i class="fa-solid fa-layer-group" style="color:var(--info)"></i>Add New Service</div>
+    <form id="srv-form" onsubmit="saveSvc(event)">
+      <input type="hidden" id="s-edit-id">
+      <div class="fg"><label class="fl">Service Name *</label><input type="text" class="fi" id="s-name" placeholder="e.g. PMJAY Health Card" required></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl">Category</label>
+          <select class="fs" id="s-cat">
+            <option value="govt">Government</option><option value="finance">Finance</option>
+            <option value="education">Education</option><option value="health">Health</option>
+            <option value="agriculture">Agriculture</option><option value="identity">Identity</option>
+            <option value="jobs">Jobs &amp; Recruitment</option><option value="business">Tax &amp; Business</option><option value="banking">Banking &amp; Finance</option><option value="transport">Travel &amp; Transport</option><option value="legal">Legal &amp; Security</option><option value="welfare">Social Welfare</option><option value="print">Printing &amp; Media</option><option value="state">State Government</option><option value="utility">Utility</option><option value="other">Other</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Badge Label</label><input type="text" class="fi" id="s-badge" placeholder="Portal / Free / CSC" value="Portal"></div>
+      </div>
+      <div class="fg"><label class="fl" for="s-authority">Issuing institute / authority</label><select id="s-authority-preset" class="fs" aria-label="Choose service authority"></select><input type="text" class="fi" id="s-authority" placeholder="e.g. Supreme Court of India / Rajya Sabha / eCourts" style="margin-top:6px"><p class="editor-hint">Choose from the list or type an institute name.</p></div>
+      <div class="fg"><label class="fl" for="s-jurisdiction">Government / State / UT</label><select class="fs" id="s-jurisdiction"></select></div>
+      <div class="fg"><label class="fl">Official URL or website route *</label><input type="text" class="fi" id="s-url" placeholder="https://example.gov.in/" required></div>
+      <div class="fg"><label class="fl">FontAwesome Icon</label><input type="text" class="fi" id="s-icon" placeholder="fa-solid fa-id-card" value="fa-solid fa-laptop-code"></div>
+      <div class="fg"><label class="fl">Description</label><textarea class="fta" id="s-desc" placeholder="Brief description..." style="min-height:60px"></textarea></div>
+      <div style="display:flex;gap:9px;justify-content:flex-end">
+        <button type="button" class="btn btn-outline" onclick="closeModal('add-srv-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add to Website</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Notice / Scheme -->
+<div class="modal-overlay" id="add-notice-modal">
+  <div class="modal-box content-editor">
+    <div class="modal-title" id="notice-mtitle"><i class="fa-solid fa-bullhorn" style="color:var(--warning)"></i>Post Update</div>
+    <form id="notice-form" onsubmit="saveNotice(event)">
+      <input type="hidden" id="notice-type" value="scheme">
+      <input type="hidden" id="n-edit-id">
+      <div class="fg"><label class="fl" id="n-title-label" for="n-title">Notice / Scheme heading *</label><input type="text" class="fi" id="n-title" placeholder="Post / recruitment or scheme heading" required></div>
+      <div id="notice-editor-fields"></div>
+      <div class="fg"><label class="fl" for="n-desc">Description *</label><textarea class="fta" id="n-desc" placeholder="Full details about the scheme or job notice..." required></textarea></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl" for="n-last-date">Last Date / Deadline</label><input type="date" class="fi" id="n-last-date"><input type="text" class="fi" id="n-date" placeholder="Or deadline text, e.g. Ongoing / To be announced" style="margin-top:6px"><p class="editor-hint">Pick a date or keep an existing text deadline.</p></div>
+        <div class="fg"><label class="fl">Official Link</label><input type="url" class="fi" id="n-link" placeholder="https://..."></div>
+      </div>
+      <div style="display:flex;gap:9px;justify-content:flex-end">
+        <button type="button" class="btn btn-outline" onclick="closeModal('add-notice-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Publish</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"><span id="t-icon"></span><span id="t-msg"></span></div>
+
+<script src="content-defaults.js"></script>
+<script src="cyber-services-data.js"></script>
+<script src="content-store.js?v=8"></script>
+<!-- Firebase SDK Module -->
+<script type="module">
+import { connectContent } from "./content-firebase.js?v=8";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
+  collection, collectionGroup, query, orderBy, limit, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAuqprV4uVabimh-ZO99CIAK08vFdM4wo8",
+    authDomain: "login-me-71357.firebaseapp.com",
+    projectId: "login-me-71357",
+    storageBucket: "login-me-71357.firebasestorage.app",
+    messagingSenderId: "276063778916",
+    appId: "1:276063778916:web:92858cbe5bdddb6890c771",
+    measurementId: "G-7MRK44J170"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+connectContent(app);
+
+window.firebaseAuth = auth;
+window.firebaseDb = db;
+window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+window.firebaseSignOut = signOut;
+window.doc = doc;
+window.getDoc = getDoc;
+window.getDocs = getDocs;
+window.addDoc = addDoc;
+window.updateDoc = updateDoc;
+window.deleteDoc = deleteDoc;
+window.fbCollection = collection;
+window.fbCollectionGroup = collectionGroup;
+window.fbQuery = query;
+window.fbOrderBy = orderBy;
+window.fbLimit = limit;
+window.fbServerTimestamp = serverTimestamp;
+
+onAuthStateChanged(auth, async (user) => {
+    if (user && window.verifyIsAdminUser) {
+        const isAdmin = await window.verifyIsAdminUser(user);
+        if (isAdmin && window.onAdminLoginSuccess) {
+            window.onAdminLoginSuccess(user.email);
+        }
+    }
+});
+</script>
+
+<script>
+'use strict';
+const K={auth:'cycafe_admin_logged_in'};
+function gl(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
+function sl(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtD(s){if(!s)return'—';try{return new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}catch(e){return s.slice(0,10)}}
+function fmtR(n){return'₹'+(Number(n)||0).toLocaleString('en-IN')}
+
+// AUTH STATE
+let loggedIn=sessionStorage.getItem(K.auth)==='true';
+
+window.verifyIsAdminUser = async function(user) {
+    if (!user || !user.email) return false;
+    const email = user.email.toLowerCase().trim();
+    try {
+        if (window.firebaseDb && window.getDoc && window.doc) {
+            const adminDoc = await window.getDoc(window.doc(window.firebaseDb, "admins", user.uid));
+            if (adminDoc.exists()) return true;
+        }
+    } catch (e) {}
+
+    return false;
+};
+
+window.onAdminLoginSuccess = function(email) {
+    loggedIn = true;
+    sessionStorage.setItem(K.auth, 'true');
+    sessionStorage.setItem('cycafe_admin_email', email || 'Admin');
+    document.getElementById('login-page').classList.add('hidden');
+    document.getElementById('admin-app').classList.remove('hidden');
+    const tbSub = document.getElementById('tb-sub');
+    if (tbSub) tbSub.textContent = 'Welcome back, ' + (email || 'Akshay Santra');
+    initApp();
+};
+
+document.getElementById('login-form').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const u = document.getElementById('l-user').value.trim();
+  const p = document.getElementById('l-pass').value;
+  const err = document.getElementById('l-err');
+  const btn = this.querySelector('button[type="submit"]');
+
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
+
+  // Firebase Authentication Only
+  if (window.signInWithEmailAndPassword && window.firebaseAuth) {
+    try {
+      const userCred = await window.signInWithEmailAndPassword(window.firebaseAuth, u, p);
+      const user = userCred.user;
+      const isAdmin = await window.verifyIsAdminUser(user);
+
+      if (!isAdmin) {
+        // Customer tried to login to Admin Panel -> REJECT and SIGN OUT
+        await window.firebaseSignOut(window.firebaseAuth);
+        err.innerHTML = '<i class="fa-solid fa-ban"></i> <b>Access Denied:</b> This account is a regular customer account. Customers cannot access the Admin Panel.';
+        err.classList.add('show');
+        return;
+      }
+
+      // Legitimate Admin authenticated!
+      window.onAdminLoginSuccess(user.email);
+    } catch (fbErr) {
+      const msg = fbErr.message ? fbErr.message.replace('Firebase: ', '') : 'Invalid credentials';
+      err.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> ${msg}`;
+      err.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-shield-halved" style="margin-right:7px"></i>Login to Admin Panel';
+    }
+  } else {
+    err.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Invalid credentials or Firebase connecting...';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-shield-halved" style="margin-right:7px"></i>Login to Admin Panel';
+  }
+});
+
+async function doLogout(){
+  if(!confirm('Logout from Admin Panel?'))return;
+  loggedIn=false;
+  sessionStorage.removeItem(K.auth);
+  sessionStorage.removeItem('cycafe_admin_email');
+  if (window.firebaseSignOut && window.firebaseAuth) {
+    try { await window.firebaseSignOut(window.firebaseAuth); } catch(e) {}
+  }
+  document.getElementById('admin-app').classList.add('hidden');
+  document.getElementById('login-page').classList.remove('hidden');
+  document.getElementById('l-user').value='';
+  document.getElementById('l-pass').value='';
+}
+
+// ====== FIREBASE DATA CACHE ======
+const fbData = { operators: [], customers: [], transactions: [], services: [] };
+
+async function loadFirebaseData(forceRefresh = false) {
+  const icon = document.getElementById('sync-icon');
+  const lbl  = document.getElementById('sync-lbl');
+  if(icon) icon.classList.add('fa-spin');
+  if(lbl)  lbl.textContent = 'Syncing...';
+
+  try {
+    const db = window.firebaseDb;
+    if (!db || !window.getDocs || !window.fbCollection) {
+      throw new Error('Firebase not ready');
+    }
+
+    // 1. Fetch all operators (users collection)
+    const usersSnap = await window.getDocs(window.fbCollection(db, 'users'));
+    const operators = [];
+    const custAll   = [];
+    const txnAll    = [];
+
+    for (const uDoc of usersSnap.docs) {
+      const ud = { id: uDoc.id, ...uDoc.data() };
+      operators.push(ud);
+
+      // 2. Each operator's customers sub-collection
+      try {
+        const custSnap = await window.getDocs(window.fbCollection(db, 'users', uDoc.id, 'customers'));
+        custSnap.forEach(cd => {
+          custAll.push({ id: cd.id, operatorId: uDoc.id, operatorName: ud.cafeName || ud.name || ud.email || uDoc.id, ...cd.data() });
+        });
+      } catch(e) {}
+
+      // 3. Each operator's transactions sub-collection
+      try {
+        const txnSnap = await window.getDocs(window.fbCollection(db, 'users', uDoc.id, 'transactions'));
+        txnSnap.forEach(td => {
+          txnAll.push({ id: td.id, operatorId: uDoc.id, operatorName: ud.cafeName || ud.name || ud.email || uDoc.id, ...td.data() });
+        });
+      } catch(e) {}
+    }
+
+    // Sort by date desc
+    const byDate = (a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0);
+    fbData.operators    = operators;
+    fbData.customers    = custAll.sort(byDate);
+    fbData.transactions = txnAll.sort(byDate);
+    fbData.services = window.CycafeContent.list('services');
+    populateOperatorSelects();
+
+    toast('Firebase synced: ' + operators.length + ' operators, ' + custAll.length + ' customers, ' + txnAll.length + ' transactions.');
+
+  } catch(err) {
+    console.warn('Firebase fetch failed:', err);
+    toast('Firebase sync failed. No local data is used.', true);
+  } finally {
+    if(icon) icon.classList.remove('fa-spin');
+    if(lbl)  lbl.textContent = 'Sync Firebase';
+  }
+
+  // Re-render current pane
+  const activePane = document.querySelector('.pane.active');
+  if(activePane) {
+    const nm = activePane.id.replace('pane-', '');
+    if(nm==='dashboard') renderDash();
+    else if(nm==='operators') renderOperators();
+    else if(nm==='customers') renderCustomers();
+    else if(nm==='transactions') renderTransactions();
+    else if(nm==='services') renderServices();
+    else if(nm==='reports') renderReports();
+  }
+}
+
+function populateOperatorSelects(){
+  ['c-operator','t-operator'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const current=el.value;
+    el.innerHTML='<option value="">Select operator / center</option>'+fbData.operators.map(o=>
+      `<option value="${esc(o.id)}">${esc(o.cafeName||o.name||o.email||o.id)}</option>`).join('');
+    if(current) el.value=current;
+  });
+}
+
+function initApp(){
+  document.getElementById('tb-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'long',year:'numeric'});
+  showPane('dashboard');
+  // Auto-fetch Firebase data after login
+  setTimeout(() => loadFirebaseData(), 800);
+}
+
+// PANES
+const PINFO={dashboard:{t:'Dashboard',s:'Overview of your business'},operators:{t:'Operators & Staff',s:'CSC operator network overview'},customers:{t:'Customer Management',s:'Manage customer records & orders'},transactions:{t:'Transaction Ledger',s:'Income & expense tracking'},services:{t:'Website Services',s:'Manage services shown on the website'},schemes:{t:'Govt Scheme Updates',s:'Publish welfare scheme news'},jobs:{t:'Job Notice Board',s:'Post government job alerts'},reports:{t:'Business Reports',s:'Analytics & financial summary'},settings:{t:'Settings',s:'Admin credentials & data management'}};
+function showPane(nm){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pn=document.getElementById('pane-'+nm);if(pn)pn.classList.add('active');
+  const bn=document.getElementById('nav-'+nm);if(bn)bn.classList.add('active');
+  const inf=PINFO[nm]||{t:nm,s:''};
+  document.getElementById('tb-title').textContent=inf.t;
+  document.getElementById('tb-sub').textContent=inf.s;
+  if(nm==='dashboard')renderDash();
+  else if(nm==='operators')renderOperators();
+  else if(nm==='customers')renderCustomers();
+  else if(nm==='transactions')renderTransactions();
+  else if(nm==='services')renderServices();
+  else if(nm==='schemes')renderSchemes();
+  else if(nm==='jobs')renderJobs();
+  else if(nm==='reports')renderReports();
+  closeMobSidebar();
+}
+
+// MOBILE
+function toggleMobSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sb-overlay').classList.toggle('show')}
+function closeMobSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sb-overlay').classList.remove('show')}
+
+// MODALS
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open');const f=document.querySelector('#'+id+' form');if(f)f.reset()}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)closeModal(this.id)}));
+
+// TOAST
+function toast(msg,err=false){
+  const el=document.getElementById('toast');
+  document.getElementById('t-icon').innerHTML=err?'<i class="fa-solid fa-circle-xmark" style="color:#f87171"></i>':'<i class="fa-solid fa-circle-check" style="color:#34d399"></i>';
+  document.getElementById('t-msg').textContent=msg;
+  el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+// DASHBOARD
+function renderDash(){
+  // Use Firebase data if available, fallback to localStorage
+  const custs = fbData.customers;
+  const txns  = fbData.transactions;
+  const ops   = fbData.operators;
+  let inc=0,exp=0;
+  txns.forEach(t=>{const a=Number(t.amount)||0;if(t.type==='Income')inc+=a;else if(t.type==='Expense')exp+=a;});
+  const pend=custs.filter(c=>(c.status||'Pending')==='Pending').length;
+  document.getElementById('cust-nav-badge').textContent=custs.length;
+  document.getElementById('op-nav-badge').textContent=ops.length||'';
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card"><div class="s-icon" style="background:#ede9fb;color:#5c43cd"><i class="fa-solid fa-user-tie"></i></div><div><div class="s-val">${ops.length}</div><div class="s-lbl">Registered Operators</div></div></div>
+    <div class="stat-card"><div class="s-icon" style="background:#dbeafe;color:#2563eb"><i class="fa-solid fa-users"></i></div><div><div class="s-val">${custs.length}</div><div class="s-lbl">Total Customers</div></div></div>
+    <div class="stat-card"><div class="s-icon" style="background:#ecfdf5;color:#059669"><i class="fa-solid fa-arrow-trend-up"></i></div><div><div class="s-val" style="color:#059669">${fmtR(inc)}</div><div class="s-lbl">Network Income</div></div></div>
+    <div class="stat-card"><div class="s-icon" style="background:#fef2f2;color:#dc2626"><i class="fa-solid fa-arrow-trend-down"></i></div><div><div class="s-val" style="color:#dc2626">${fmtR(exp)}</div><div class="s-lbl">Network Expense</div></div></div>
+    <div class="stat-card"><div class="s-icon" style="background:#fffbeb;color:#d97706"><i class="fa-solid fa-clock"></i></div><div><div class="s-val" style="color:#d97706">${pend}</div><div class="s-lbl">Pending Orders</div></div></div>
+  `;
+  const rc=custs.slice(0,5);
+  document.getElementById('dash-custs').innerHTML=rc.length?rc.map((c,i)=>`<tr>
+    <td style="color:var(--muted);font-size:11px">${i+1}</td>
+    <td><strong>${esc(c.name)}</strong></td>
+    <td style="font-family:monospace">${esc(c.mobile||'—')}</td>
+    <td><span class="chip" style="font-size:10px">${esc(c.service||'—')}</span></td>
+    <td><strong>${fmtR(c.amount)}</strong></td>
+    <td style="font-size:11px;color:var(--muted)">${esc(c.operatorName||'—')}</td>
+    <td><span class="st-badge ${stCls(c.status)}">${esc(c.status||'Pending')}</span></td>
+  </tr>`).join(''):`<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-users"></i><p>No customers yet. Click Sync Firebase to load data.</p></div></td></tr>`;
+  const rt=txns.slice(0,5);
+  document.getElementById('dash-txns').innerHTML=rt.length?rt.map((t,i)=>{const inc=t.type==='Income';return`<tr>
+    <td style="color:var(--muted);font-size:11px">${i+1}</td>
+    <td style="font-size:11px;color:var(--muted)">${fmtD(t.createdAt)}</td>
+    <td style="font-size:11px">${esc(t.operatorName||'—')}</td>
+    <td><strong>${esc(t.name||'—')}</strong></td>
+    <td>${esc(t.category||'Service')}</td>
+    <td><span class="chip ${inc?'chip-green':'chip-red'}">${esc(t.type)}</span></td>
+    <td><strong style="color:${inc?'var(--success)':'var(--danger)'}">${inc?'+':'-'}${fmtR(t.amount)}</strong></td>
+    <td>${esc(t.method||'Cash')}</td>
+  </tr>`}).join(''):`<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-receipt"></i><p>No transactions yet.</p></div></td></tr>`;
+}
+function stCls(s){return{Pending:'st-pending','In Progress':'st-progress',Completed:'st-completed',Cancelled:'st-cancelled'}[s]||'st-pending'}
+
+// OPERATORS
+function renderOperators(){
+  const ops = fbData.operators;
+  const srch=(document.getElementById('op-srch')?.value||'').toLowerCase();
+  let list = ops;
+  if(srch) list=list.filter(o=>
+    (o.cafeName||o.name||'').toLowerCase().includes(srch)||
+    (o.email||'').toLowerCase().includes(srch)||
+    (o.mobile||'').includes(srch)
+  );
+  document.getElementById('op-chip').textContent=list.length+' operators';
+  const tb=document.getElementById('op-tbody');
+  if(!list.length){
+    tb.innerHTML=`<tr><td colspan="10"><div class="empty-state"><i class="fa-solid fa-user-tie"></i><p>${ops.length?'No results match your search.':'No operators found. Click "Sync Firebase" to load data.'}</p></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML=list.map((o,i)=>{
+    const opCusts = fbData.customers.filter(c=>c.operatorId===o.id);
+    const opTxns  = fbData.transactions.filter(t=>t.operatorId===o.id);
+    let opInc=0,opExp=0;
+    opTxns.forEach(t=>{const a=Number(t.amount)||0;if(t.type==='Income')opInc+=a;else opExp+=a;});
+    const opProfit=opInc-opExp;
+    const lastActive=opCusts.length?opCusts[0].createdAt:o.createdAt;
+    return`<tr>
+      <td style="color:var(--muted);font-size:11px">${i+1}</td>
+      <td><strong style="display:block">${esc(o.cafeName||o.name||'Unnamed Center')}</strong>
+          <span style="font-size:10px;color:var(--muted)">${esc(o.id.slice(0,12))}…</span></td>
+      <td style="font-size:12px">${esc(o.email||'—')}</td>
+      <td style="font-family:monospace;font-size:12px">${esc(o.mobile||o.phone||'—')}</td>
+      <td style="font-size:11px;color:var(--muted)">${fmtD(o.createdAt||o.joinedAt)}</td>
+      <td><strong>${opCusts.length}</strong></td>
+      <td style="color:var(--success)"><strong>${fmtR(opInc)}</strong></td>
+      <td style="color:var(--danger)"><strong>${fmtR(opExp)}</strong></td>
+      <td style="color:${opProfit>=0?'var(--success)':'var(--danger)'};"><strong>${fmtR(opProfit)}</strong></td>
+      <td><button class="btn btn-outline" style="padding:4px 9px;font-size:11px" onclick="viewOperator('${o.id}')">
+        <i class="fa-solid fa-eye"></i> View</button></td>
+    </tr>`;
+  }).join('');
+}
+function viewOperator(uid){
+  // Filter customers & transactions to this operator, then show customers pane
+  const opEl=document.getElementById('cust-op-flt');
+  if(opEl){opEl.value=uid;};
+  showPane('customers');
+}
+
+// CUSTOMERS
+async function saveCust(e){
+  e.preventDefault();
+  const operatorId=document.getElementById('c-operator').value;
+  const operator=fbData.operators.find(o=>o.id===operatorId);
+  if(!operatorId||!operator){toast('Select an operator first.',true);return;}
+  const c={name:document.getElementById('c-name').value.trim(),mobile:document.getElementById('c-mob').value.trim(),email:document.getElementById('c-email').value.trim(),service:document.getElementById('c-svc').value,amount:Number(document.getElementById('c-amt').value)||0,status:document.getElementById('c-sta').value,notes:document.getElementById('c-notes').value.trim(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  try { await window.addDoc(window.fbCollection(window.firebaseDb,'users',operatorId,'customers'),c); closeModal('add-cust-modal'); await loadFirebaseData(); toast('Customer saved to Firebase.'); }
+  catch(err){toast('Could not save customer: '+err.message,true);}
+}
+function renderCustomers(){
+  // Populate operator filter dropdown from Firebase data
+  const opSel=document.getElementById('cust-op-flt');
+  if(opSel && fbData.operators.length){
+    const cur=opSel.value;
+    opSel.innerHTML='<option value="all">All Operators</option>'+
+      fbData.operators.map(o=>`<option value="${o.id}">${esc(o.cafeName||o.name||o.email||o.id)}</option>`).join('');
+    if(cur)opSel.value=cur;
+  }
+  // Use Firebase data if available, else localStorage
+  let list = fbData.customers;
+  const srch=(document.getElementById('cust-srch')?.value||'').toLowerCase();
+  const flt=document.getElementById('cust-flt')?.value||'all';
+  const opFlt=document.getElementById('cust-op-flt')?.value||'all';
+  if(opFlt!=='all') list=list.filter(c=>c.operatorId===opFlt);
+  if(flt!=='all')   list=list.filter(c=>(c.status||'Pending')===flt);
+  if(srch) list=list.filter(c=>
+    (c.name||'').toLowerCase().includes(srch)||
+    (c.mobile||'').includes(srch)||
+    (c.service||'').toLowerCase().includes(srch)||
+    (c.operatorName||'').toLowerCase().includes(srch)
+  );
+  document.getElementById('cust-chip').textContent=list.length;
+  document.getElementById('cust-nav-badge').textContent=fbData.customers.length;
+  const tb=document.getElementById('cust-tbody');
+  if(!list.length){tb.innerHTML=`<tr><td colspan="9"><div class="empty-state"><i class="fa-solid fa-users"></i><p>No customer records found. Click "Sync Firebase" to load data.</p></div></td></tr>`;return}
+  tb.innerHTML=list.map((c,i)=>{
+    const mob=c.mobile||'—';
+    const wa=mob!=='—'?`https://api.whatsapp.com/send?phone=91${mob.replace(/\D/g,'')}&text=Hello%20${encodeURIComponent(c.name||'')}%2C%20regarding%20your%20${encodeURIComponent(c.service||'')}%20at%20Cycafe.`:'#';
+    return`<tr>
+      <td style="color:var(--muted);font-size:11px">${i+1}</td>
+      <td><strong style="display:block">${esc(c.name)}</strong><span style="font-size:11px;color:var(--muted)">${esc(c.email||'')}</span></td>
+      <td style="font-family:monospace;font-size:12px">${esc(mob)}</td>
+      <td><span class="chip" style="font-size:10px">${esc(c.service||'—')}</span></td>
+      <td><strong>${fmtR(c.amount)}</strong></td>
+      <td style="font-size:11px;color:var(--muted)">${esc(c.operatorName||'—')}</td>
+      <td style="font-size:11px;color:var(--muted)">${fmtD(c.createdAt)}</td>
+      <td><span class="st-badge ${stCls(c.status||'Pending')}">${esc(c.status||'Pending')}</span></td>
+      <td><div style="display:flex;align-items:center;gap:3px">
+        ${mob!=='—'?`<a href="${wa}" target="_blank" class="ib ib-success" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>`:''}
+        <button class="ib" onclick="editCust('${esc(c.id)}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
+        <select class="fs" onchange="updCustSt('${esc(c.id)}',this.value)" title="Update status" style="width:105px;padding:4px;font-size:10px"><option ${c.status==='Pending'?'selected':''}>Pending</option><option ${c.status==='In Progress'?'selected':''}>In Progress</option><option ${c.status==='Completed'?'selected':''}>Completed</option><option ${c.status==='Cancelled'?'selected':''}>Cancelled</option></select>
+        <button class="ib ib-danger" onclick="delCust('${esc(c.id)}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+      </div></td>
+    </tr>`}).join('');
+}
+async function updCustSt(id,st){const c=fbData.customers.find(x=>x.id===id);if(!c)return;try{await window.updateDoc(window.doc(window.firebaseDb,'users',c.operatorId,'customers',id),{status:st,updatedAt:new Date().toISOString()});await loadFirebaseData();toast('Customer updated.')}catch(e){toast('Update failed: '+e.message,true)}}
+async function editCust(id){const c=fbData.customers.find(x=>x.id===id);if(!c)return;const name=prompt('Customer name',c.name||'');if(name===null)return;const mobile=prompt('Mobile number',c.mobile||'');if(mobile===null)return;const service=prompt('Service',c.service||'');if(service===null)return;const amount=prompt('Amount',c.amount||0);if(amount===null)return;try{await window.updateDoc(window.doc(window.firebaseDb,'users',c.operatorId,'customers',id),{name:name.trim(),mobile:mobile.trim(),service:service.trim(),amount:Number(amount)||0,updatedAt:new Date().toISOString()});await loadFirebaseData();toast('Customer updated.')}catch(e){toast('Update failed: '+e.message,true)}}
+async function delCust(id){const c=fbData.customers.find(x=>x.id===id);if(!c||!confirm('Delete this customer record?'))return;try{await window.deleteDoc(window.doc(window.firebaseDb,'users',c.operatorId,'customers',id));await loadFirebaseData();toast('Customer deleted.')}catch(e){toast('Delete failed: '+e.message,true)}}
+
+// TRANSACTIONS
+function openTxnModal(type){
+  document.getElementById('txn-type').value=type;
+  const inc=type==='Income';
+  document.getElementById('txn-mtitle').innerHTML=inc?'<i class="fa-solid fa-arrow-trend-up" style="color:var(--success)"></i>Add Income':'<i class="fa-solid fa-arrow-trend-down" style="color:var(--danger)"></i>Add Expense';
+  const sb=document.getElementById('txn-sbtn');
+  sb.className=inc?'btn btn-success':'btn btn-danger';
+  sb.innerHTML=inc?'<i class="fa-solid fa-save"></i> Save Income':'<i class="fa-solid fa-save"></i> Save Expense';
+  openModal('add-txn-modal');
+}
+async function saveTxn(e){
+  e.preventDefault();
+  const operatorId=document.getElementById('t-operator').value;
+  if(!operatorId){toast('Select an operator first.',true);return;}
+  const t={name:document.getElementById('t-name').value.trim(),amount:Number(document.getElementById('t-amt').value)||0,category:document.getElementById('t-cat').value.trim()||'Service Fee',method:document.getElementById('t-mth').value,type:document.getElementById('txn-type').value||'Income',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+  try{await window.addDoc(window.fbCollection(window.firebaseDb,'users',operatorId,'transactions'),t);closeModal('add-txn-modal');await loadFirebaseData();toast('Transaction saved to Firebase.')}catch(err){toast('Could not save transaction: '+err.message,true)}
+}
+function renderTransactions(){
+  // Populate operator filter dropdown
+  const opSel=document.getElementById('txn-op-flt');
+  if(opSel && fbData.operators.length){
+    const cur=opSel.value;
+    opSel.innerHTML='<option value="all">All Operators</option>'+
+      fbData.operators.map(o=>`<option value="${o.id}">${esc(o.cafeName||o.name||o.email||o.id)}</option>`).join('');
+    if(cur)opSel.value=cur;
+  }
+  let list = fbData.transactions;
+  const flt=document.getElementById('txn-flt')?.value||'all';
+  const opFlt=document.getElementById('txn-op-flt')?.value||'all';
+  const srch=(document.getElementById('txn-srch')?.value||'').toLowerCase();
+  if(opFlt!=='all') list=list.filter(t=>t.operatorId===opFlt);
+  if(flt==='Income')  list=list.filter(t=>t.type==='Income');
+  else if(flt==='Expense') list=list.filter(t=>t.type==='Expense');
+  if(srch) list=list.filter(t=>
+    (t.name||'').toLowerCase().includes(srch)||
+    (t.category||'').toLowerCase().includes(srch)||
+    (t.operatorName||'').toLowerCase().includes(srch)
+  );
+  let totInc=0,totExp=0;
+  list.forEach(t=>{const a=Number(t.amount)||0;if(t.type==='Income')totInc+=a;else totExp+=a;});
+  document.getElementById('txn-chip').textContent=list.length+' · +'+fmtR(totInc)+' / -'+fmtR(totExp);
+  const tb=document.getElementById('txn-tbody');
+  if(!list.length){tb.innerHTML=`<tr><td colspan="9"><div class="empty-state"><i class="fa-solid fa-receipt"></i><p>No transactions found. Click "Sync Firebase" to load data.</p></div></td></tr>`;return}
+  tb.innerHTML=list.map((t,i)=>{const inc=t.type==='Income';return`<tr>
+    <td style="color:var(--muted);font-size:11px">${i+1}</td>
+    <td style="font-size:11px;color:var(--muted)">${fmtD(t.createdAt)}</td>
+    <td style="font-size:11px">${esc(t.operatorName||'—')}</td>
+    <td><strong>${esc(t.name||'—')}</strong></td>
+    <td>${esc(t.category||'Service')}</td>
+    <td><span class="chip ${inc?'chip-green':'chip-red'}">${esc(t.type)}</span></td>
+    <td><strong style="color:${inc?'var(--success)':'var(--danger)'}">${inc?'+':'-'}${fmtR(t.amount)}</strong></td>
+    <td>${esc(t.method||'Cash')}</td>
+    <td><button class="ib" onclick="editTxn('${esc(t.id)}')" title="Edit"><i class="fa-solid fa-pen"></i></button> <button class="ib ib-danger" onclick="delTxn('${esc(t.id)}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button></td>
+  </tr>`}).join('');
+}
+async function delTxn(id){const t=fbData.transactions.find(x=>x.id===id);if(!t||!confirm('Delete this transaction?'))return;try{await window.deleteDoc(window.doc(window.firebaseDb,'users',t.operatorId,'transactions',id));await loadFirebaseData();toast('Transaction deleted.')}catch(e){toast('Delete failed: '+e.message,true)}}
+async function editTxn(id){const t=fbData.transactions.find(x=>x.id===id);if(!t)return;const name=prompt('Particulars',t.name||'');if(name===null)return;const category=prompt('Category',t.category||'');if(category===null)return;const amount=prompt('Amount',t.amount||0);if(amount===null)return;try{await window.updateDoc(window.doc(window.firebaseDb,'users',t.operatorId,'transactions',id),{name:name.trim(),category:category.trim(),amount:Number(amount)||0,updatedAt:new Date().toISOString()});await loadFirebaseData();toast('Transaction updated.')}catch(e){toast('Update failed: '+e.message,true)}}
+
+// Content editors are in admin-content.js.
+
+// REPORTS
+function renderReports(){
+  const custs   = fbData.customers;
+  const txns    = fbData.transactions;
+  const notices = window.CycafeContent.list('notices');
+  const svcs    = fbData.services;
+  const ops     = fbData.operators;
+  let inc=0,exp=0;
+  txns.forEach(t=>{const a=Number(t.amount)||0;if(t.type==='Income')inc+=a;else if(t.type==='Expense')exp+=a;});
+  const pft=inc-exp;
+  document.getElementById('r-income').textContent=fmtR(inc);
+  document.getElementById('r-expense').textContent=fmtR(exp);
+  document.getElementById('r-profit').textContent=fmtR(pft);
+  document.getElementById('r-profit').style.color=pft>=0?'var(--success)':'var(--danger)';
+  document.getElementById('r-custs').textContent=custs.length;
+  if(document.getElementById('r-operators'))document.getElementById('r-operators').textContent=ops.length;
+  document.getElementById('r-svcs').textContent=svcs.length;
+
+  // Operator performance leaderboard
+  const rptTb = document.getElementById('rpt-op-tbody');
+  if(rptTb && ops.length){
+    const ranked = ops.map(o=>{
+      const oc=fbData.customers.filter(c=>c.operatorId===o.id);
+      const ot=fbData.transactions.filter(t=>t.operatorId===o.id);
+      let oi=0,oe=0; ot.forEach(t=>{const a=Number(t.amount)||0;if(t.type==='Income')oi+=a;else oe+=a;});
+      return{...o,custCount:oc.length,income:oi,expense:oe,profit:oi-oe};
+    }).sort((a,b)=>b.income-a.income);
+    rptTb.innerHTML=ranked.map((o,i)=>`<tr>
+      <td><span style="font-size:13px">${['🥇','🥈','🥉'][i]||'#'+(i+1)}</span></td>
+      <td><strong>${esc(o.name||o.email||'—')}</strong></td>
+      <td>${esc(o.cafeName||'—')}</td>
+      <td>${o.custCount}</td>
+      <td style="color:var(--success)"><strong>${fmtR(o.income)}</strong></td>
+      <td style="color:var(--danger)">${fmtR(o.expense)}</td>
+      <td style="color:${o.profit>=0?'var(--success)':'var(--danger)'}">${fmtR(o.profit)}</td>
+      <td><button class="btn btn-outline" style="padding:4px 9px;font-size:11px" onclick="viewOperator('${o.id}')">
+        <i class="fa-solid fa-eye"></i> Customers</button></td>
+    </tr>`).join('');
+  } else if(rptTb){
+    rptTb.innerHTML=`<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-ranking-star"></i><p>Sync Firebase data to see operator leaderboard.</p></div></td></tr>`;
+  }
+}
+
+// SETTINGS
+function changePass(e){
+  e.preventDefault();
+  const op=document.getElementById('old-p').value;
+  const np=document.getElementById('new-p').value;
+  const cp=document.getElementById('cnf-p').value;
+  if(!chkPass(op)){toast('Current password wrong!',true);return}
+  if(np!==cp){toast('New passwords do not match!',true);return}
+  if(np.length<6){toast('Min 6 characters required!',true);return}
+  localStorage.setItem(K.pass,np);document.getElementById('pass-form').reset();toast('Password updated! Use new password next login.');
+}
+function exportData(){
+  const d={exported_at:new Date().toISOString(),customers:fbData.customers,transactions:fbData.transactions,services:window.CycafeContent.list('services'),notices:window.CycafeContent.list('notices')};
+  const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='cycafe-data-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(u);toast('Data exported!');
+}
+function clearTxns(){if(!confirm('DELETE ALL transaction records?'))return;sl(K.txns,[]);toast('Transactions cleared.')}
+function clearCusts(){if(!confirm('DELETE ALL customer records?'))return;sl(K.custs,[]);toast('Customer records cleared.')}
+</script>
+<script src="admin-content.js?v=14"></script>
+</body>
+</html>

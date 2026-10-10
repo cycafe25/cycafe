@@ -1,0 +1,41 @@
+{
+  "name": "Cycafe - Akshay Santra CSC Dashboard",
+  "short_name": "Cycafe",
+  "description": "Akshay Santra Common Services Centre - Digital services, PAN, Aadhaar, Passport photos, PDF tools, and more",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#5c43cd",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "images/cycafe-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/cycafe-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities", "business"],
+  "shortcuts": [
+    {
+      "name": "Add Customer",
+      "short_name": "Add Customer",
+      "description": "Add a new customer record",
+      "url": "/#/customers/new",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M15 21h-4V9H9v-4h6V2h4v3h6v4h-6v12zm3-13h-8v8H6v4h8v8h4v-8h8v-4h-8V8z'/%3E%3C/svg%3E", "sizes": "192x192" }]
+    },
+    {
+      "name": "Passport Photo",
+      "short_name": "Passport Photo",
+      "description": "Create passport photo sheets",
+      "url": "/#/passport-photo",
+      "icons": [{ "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E", "sizes": "192x192" }]
+    }
+  ]
+}

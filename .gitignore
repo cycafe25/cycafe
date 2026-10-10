@@ -1,0 +1,20 @@
+# Firebase config with actual credentials - DO NOT COMMIT
+config.local.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/*
+!.vscode/launch.json
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+node_modules/
