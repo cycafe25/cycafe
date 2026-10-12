@@ -34,6 +34,51 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ReviewLink inventory is private to Cycafe administrators.
+    function validReviewBoard(data) {
+      return data.keys().hasAll(['label', 'business_name', 'location', 'review_url', 'status', 'created_at', 'updated_at', 'created_by', 'scan_base']) &&
+        data.keys().hasOnly(['label', 'business_name', 'location', 'review_url', 'status', 'created_at', 'updated_at', 'created_by', 'scan_base']) &&
+        data.label is string && data.label.size() > 0 && data.label.size() <= 80 &&
+        data.business_name is string && data.business_name.size() <= 120 &&
+        data.location is string && data.location.size() <= 120 &&
+        data.review_url is string && data.review_url.size() <= 2048 &&
+        data.created_at is string && data.updated_at is string && data.created_by is string &&
+        data.scan_base is string && data.scan_base.size() <= 2048 &&
+        data.status in ['unassigned', 'active', 'paused'] &&
+        (data.review_url == '' || data.review_url.matches('^https://(g[.]page|search[.]google[.]com|google[.]com|www[.]google[.]com|maps[.]google[.]com)/.*$')) &&
+        (data.status != 'active' || (data.business_name.size() > 0 && data.review_url.size() > 0)) &&
+        (data.status != 'unassigned' || (data.business_name == '' && data.review_url == ''));
+    }
+
+    function matchingRedirect(code, data) {
+      let mapping = getAfter(/databases/$(database)/documents/reviewRedirects/$(code)).data;
+      return mapping.status == data.status &&
+        mapping.review_url == (data.status == 'active' ? data.review_url : '');
+    }
+
+    match /reviewBoards/{code} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && code.matches('^[a-f0-9]{20}$') &&
+        validReviewBoard(request.resource.data) && request.resource.data.created_by == request.auth.uid &&
+        matchingRedirect(code, request.resource.data);
+      allow update: if isAdmin() && validReviewBoard(request.resource.data) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['created_at', 'created_by', 'scan_base']) &&
+        matchingRedirect(code, request.resource.data);
+      allow delete: if false;
+    }
+
+    // Customers can resolve one QR anonymously, but cannot list inventory or edit destinations.
+    match /reviewRedirects/{code} {
+      allow get: if code.matches('^[a-f0-9]{20}$');
+      allow list, delete: if false;
+      allow create, update: if isAdmin() && code.matches('^[a-f0-9]{20}$') &&
+        request.resource.data.keys().hasOnly(['status', 'review_url']) &&
+        request.resource.data.status == getAfter(/databases/$(database)/documents/reviewBoards/$(code)).data.status &&
+        request.resource.data.review_url ==
+          (getAfter(/databases/$(database)/documents/reviewBoards/$(code)).data.status == 'active'
+            ? getAfter(/databases/$(database)/documents/reviewBoards/$(code)).data.review_url : '');
+    }
+
     // Every dashboard account can access its own profile and data; Admins can manage all
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();

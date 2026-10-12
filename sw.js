@@ -1,7 +1,7 @@
 // Service Worker for Cycafe CSC Dashboard
 // Optimized for lightning-fast reloads, instant asset serving, and reliable offline support
 
-const CACHE_NAME = 'cycafe-v17-auth-theme';
+const CACHE_NAME = 'cycafe-v18-native-reviewlink';
 
 // Core local shell files to pre-cache
 const STATIC_ASSETS = [
@@ -102,6 +102,12 @@ self.addEventListener('fetch', (event) => {
 
     // Skip non-http(s) schemes (e.g., chrome-extension)
     if (!url.protocol.startsWith('http')) {
+        return;
+    }
+
+    // A customer QR must never fall back to the dashboard/login shell.
+    if (url.pathname.endsWith('/review.html')) {
+        event.respondWith(fetch(request));
         return;
     }
 

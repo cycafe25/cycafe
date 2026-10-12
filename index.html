@@ -59,6 +59,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- Firebase Config (loads config.local.js for dev, config.js template for reference) -->
     <script src="config.local.js"></script>
+    <script src="firebase-public-config.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -5645,23 +5646,10 @@
         });
 
         async function verifyIsAdminUser(user) {
-            if (!user || !user.email) return false;
-            const email = user.email.toLowerCase().trim();
-            const customAdminEmail = (localStorage.getItem('cycafe_admin_email') || '').toLowerCase().trim();
-            const adminWhitelist = ['admin@cycafe.in', 'akshay@cycafe.in', customAdminEmail].filter(Boolean);
-            if (adminWhitelist.includes(email) || email.startsWith('admin@')) return true;
-
-            try {
-                const adminDoc = await getDoc(doc(db, "admins", user.uid));
-                if (adminDoc.exists()) return true;
-            } catch (e) {}
-
-            try {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists() && userDoc.data()?.role === 'admin') return true;
-            } catch (e) {}
-
-            return false;
+            if (!user) return false;
+            // Match the authorization enforced by Firestore rules.
+            const adminDoc = await getDoc(doc(db, "admins", user.uid));
+            return adminDoc.exists();
         }
 
         window.submitAdminLoginForm = async function() {
@@ -5689,7 +5677,7 @@
                 if (!isAdmin) {
                     await signOut(auth);
                     if (alertEl) {
-                        alertEl.innerHTML = '<div class="rounded-xl border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-700 mb-3 flex items-center gap-2"><i class="fa-solid fa-ban text-rose-500 shrink-0"></i><span><b>Access Denied:</b> This account is a regular customer account. Only authorized administrators can access the Admin Panel.</span></div>';
+                        alertEl.innerHTML = '<div class="rounded-xl border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-700 mb-3 flex items-center gap-2"><i class="fa-solid fa-ban text-rose-500 shrink-0"></i><span><b>Access Denied:</b> इस खाते का admin record नहीं मिला। Firebase Console → Authentication में इस ईमेल का UID कॉपी करें, फिर Firestore → admins में उसी UID की document बनाएं।</span></div>';
                     }
                     return;
                 }

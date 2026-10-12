@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel — Cycafe</title>
     <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="reviewlink-admin.css?v=1">
+    <script src="config.local.js"></script>
+    <script src="firebase-public-config.js"></script>
+    <script src="vendor/qrcode.js"></script>
+    <script src="reviewlink-core.js?v=1"></script>
     <link rel="icon" type="image/png" href="images/cycafe-icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -194,6 +199,7 @@ tbody tr:hover{background:#fafafa}
       <div class="nav-lbl">Analytics</div>
       <button class="nav-item" id="nav-reports" onclick="showPane('reports')"><span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>Reports</button>
       <div class="nav-lbl">Settings</div>
+      <button class="nav-item" id="nav-reviewlink" onclick="showPane('reviewlink')"><span class="nav-icon"><i class="fa-solid fa-qrcode"></i></span>ReviewLink Manager</button>
       <button class="nav-item" id="nav-settings" onclick="showPane('settings')"><span class="nav-icon"><i class="fa-solid fa-gear"></i></span>Settings</button>
     </nav>
     <div class="sb-foot">
@@ -392,6 +398,36 @@ tbody tr:hover{background:#fafafa}
       </div>
     </div>
 
+    <!-- Native ReviewLink workspace; records use the Cycafe Firebase backend. -->
+    <div class="pane" id="pane-reviewlink">
+      <div class="card" style="margin-bottom:18px"><div class="card-hd"><h2 style="font-size:18px">ReviewLink · QR boards</h2><span class="chip">Cycafe backend</span></div><div class="rl-body"><p class="rl-help">Create a permanent QR, connect it to a business, and update its destination here. Customers scan without ChatGPT login.</p></div></div>
+      <p id="rl-message" class="rl-status" role="status">Waiting for Firebase connection…</p>
+      <div class="rl-counters"><div class="rl-counter"><strong id="rl-total">0</strong>Total boards</div><div class="rl-counter"><strong id="rl-active">0</strong>Active</div><div class="rl-counter"><strong id="rl-unassigned">0</strong>Ready to assign</div><div class="rl-counter"><strong id="rl-paused">0</strong>Paused</div></div>
+      <div class="rl-layout"><div>
+        <div class="card" style="margin-bottom:18px"><div class="card-hd"><h3 class="card-title">Create QR boards</h3></div><form id="rl-create-form" class="rl-body">
+          <div class="fg"><label class="fl" for="rl-domain">Permanent deployment URL</label><input class="fi" id="rl-domain" type="url" required maxlength="2048"><p class="rl-help">Use your final website URL (include a trailing / for a subfolder). This address is saved with each board and cannot be changed after printing.</p></div>
+          <div class="rl-form-grid"><div class="fg"><label class="fl" for="rl-prefix">Board name / batch prefix</label><input class="fi" id="rl-prefix" value="Review board" maxlength="60" required></div><div class="fg"><label class="fl" for="rl-count">Quantity</label><input class="fi" id="rl-count" type="number" min="1" max="100" step="1" value="1" required></div></div>
+          <button type="submit" class="btn btn-primary" id="rl-create-button" disabled>Create QR boards</button>
+        </form></div>
+        <div class="card"><div class="card-hd"><h3 class="card-title">Board inventory</h3><div class="rl-actions" style="margin:0"><button class="btn btn-outline" id="rl-refresh">Refresh</button><button class="btn btn-outline" id="rl-export" disabled>Export CSV</button><button class="btn btn-outline" id="rl-print-all" disabled>Print all</button></div></div><div class="rl-body"><div class="rl-toolbar"><input class="fi" id="rl-search" placeholder="Search board, business, code…" aria-label="Search QR boards"><select class="fs" id="rl-filter" aria-label="Filter board status"><option value="all">All statuses</option><option value="active">Active</option><option value="unassigned">Ready to assign</option><option value="paused">Paused</option></select></div><p id="rl-empty" class="rl-help">Create your first QR board above.</p><div class="tbl-wrap"><table><thead><tr><th>Board / business</th><th>Status</th><th>Location</th><th>Action</th></tr></thead><tbody id="rl-table"></tbody></table></div></div></div>
+        <p class="rl-help" style="margin-top:15px">Existing printed QR codes with the old chatgpt.site address keep using that address. Create and print new QR codes here to use your own website. Visit analytics from the old site are not copied.</p>
+      </div><div class="rl-side">
+        <div id="rl-placeholder" class="card rl-body"><h3 style="font-size:15px">Connect a business</h3><p class="rl-help" style="margin-top:10px">Choose Manage beside a board to assign a Google review link, change status, download its QR or print a sign.</p></div>
+        <div id="rl-editor" class="card" hidden><div class="card-hd"><h3 class="card-title">Manage board</h3></div><div class="rl-body">
+          <div id="rl-qr" class="rl-qr" role="img" aria-label="Permanent QR code"></div><small id="rl-code"></small><a id="rl-permanent" class="rl-url" target="_blank" rel="noopener noreferrer"></a>
+          <div class="rl-actions"><button class="btn btn-outline" id="rl-copy">Copy link</button><button class="btn btn-outline" id="rl-download-svg">SVG</button><button class="btn btn-outline" id="rl-download-png">PNG</button><button class="btn btn-outline" id="rl-print-one">Print</button></div>
+          <form id="rl-edit-form" style="margin-top:20px">
+            <div class="fg"><label class="fl" for="rl-edit-label">Board name</label><input class="fi" id="rl-edit-label" required maxlength="80"></div>
+            <div class="fg"><label class="fl" for="rl-edit-business_name">Business name</label><input class="fi" id="rl-edit-business_name" maxlength="120"></div>
+            <div class="fg"><label class="fl" for="rl-edit-location">Location</label><input class="fi" id="rl-edit-location" maxlength="120"></div>
+            <div class="fg"><label class="fl" for="rl-edit-review_url">Google review-request link</label><input class="fi" id="rl-edit-review_url" type="url" maxlength="2048" placeholder="https://g.page/r/…/review"><p class="rl-help">Google Business Profile → Get more reviews → Copy link.</p></div>
+            <div class="fg"><label class="fl" for="rl-edit-status">Status</label><select class="fs" id="rl-edit-status"><option value="unassigned">Ready to assign</option><option value="active">Active</option><option value="paused">Paused</option></select></div>
+            <button type="submit" class="btn btn-primary" id="rl-save-button" disabled>Save changes</button><p class="rl-help" style="margin-top:10px">Changing the review destination keeps the printed QR unchanged. Paused boards do not redirect customers.</p>
+          </form>
+        </div></div>
+      </div></div>
+    </div>
+
     <!-- ====== SETTINGS ====== -->
     <div class="pane" id="pane-settings">
       <div class="card" style="max-width:520px;margin-bottom:16px">
@@ -553,6 +589,7 @@ tbody tr:hover{background:#fafafa}
 <script src="content-store.js?v=8"></script>
 <!-- Firebase SDK Module -->
 <script type="module">
+import { connectReviewLink } from "./reviewlink-firebase.js?v=1";
 import { connectContent } from "./content-firebase.js?v=8";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -561,7 +598,7 @@ import {
   collection, collectionGroup, query, orderBy, limit, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-const firebaseConfig = {
+const firebaseConfig = window.FIREBASE_CONFIG || {
     apiKey: "AIzaSyAuqprV4uVabimh-ZO99CIAK08vFdM4wo8",
     authDomain: "login-me-71357.firebaseapp.com",
     projectId: "login-me-71357",
@@ -575,6 +612,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 connectContent(app);
+connectReviewLink(app);
 
 window.firebaseAuth = auth;
 window.firebaseDb = db;
@@ -595,9 +633,13 @@ window.fbServerTimestamp = serverTimestamp;
 
 onAuthStateChanged(auth, async (user) => {
     if (user && window.verifyIsAdminUser) {
-        const isAdmin = await window.verifyIsAdminUser(user);
-        if (isAdmin && window.onAdminLoginSuccess) {
-            window.onAdminLoginSuccess(user.email);
+        try {
+            const isAdmin = await window.verifyIsAdminUser(user);
+            if (isAdmin && window.onAdminLoginSuccess) window.onAdminLoginSuccess(user.email);
+        } catch (error) {
+            const el = document.getElementById('l-err');
+            el.textContent = 'Admin access जाँच नहीं हो सकी। कृपया दोबारा login करें।';
+            el.classList.add('show');
         }
     }
 });
@@ -616,16 +658,12 @@ function fmtR(n){return'₹'+(Number(n)||0).toLocaleString('en-IN')}
 let loggedIn=sessionStorage.getItem(K.auth)==='true';
 
 window.verifyIsAdminUser = async function(user) {
-    if (!user || !user.email) return false;
-    const email = user.email.toLowerCase().trim();
-    try {
-        if (window.firebaseDb && window.getDoc && window.doc) {
-            const adminDoc = await window.getDoc(window.doc(window.firebaseDb, "admins", user.uid));
-            if (adminDoc.exists()) return true;
-        }
-    } catch (e) {}
-
-    return false;
+    if (!user) return false;
+    if (!window.firebaseDb || !window.getDoc || !window.doc) {
+        throw new Error('Firebase is still connecting. Please try again.');
+    }
+    const adminDoc = await window.getDoc(window.doc(window.firebaseDb, "admins", user.uid));
+    return adminDoc.exists();
 };
 
 window.onAdminLoginSuccess = function(email) {
@@ -660,7 +698,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
       if (!isAdmin) {
         // Customer tried to login to Admin Panel -> REJECT and SIGN OUT
         await window.firebaseSignOut(window.firebaseAuth);
-        err.innerHTML = '<i class="fa-solid fa-ban"></i> <b>Access Denied:</b> This account is a regular customer account. Customers cannot access the Admin Panel.';
+        err.innerHTML = '<i class="fa-solid fa-ban"></i> <b>Access Denied:</b> इस खाते का admin record नहीं मिला। Firebase Console → Authentication में इस ईमेल का UID कॉपी करें, फिर Firestore → admins में उसी UID की document बनाएं।';
         err.classList.add('show');
         return;
       }
@@ -668,8 +706,8 @@ document.getElementById('login-form').addEventListener('submit', async function(
       // Legitimate Admin authenticated!
       window.onAdminLoginSuccess(user.email);
     } catch (fbErr) {
-      const msg = fbErr.message ? fbErr.message.replace('Firebase: ', '') : 'Invalid credentials';
-      err.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> ${msg}`;
+      const msg = fbErr.code === 'permission-denied' ? 'Admin permission जाँच नहीं हो सकी। Firebase Console में firestore.rules publish करें; admins/UID का अपना record पढ़ने की अनुमति चाहिए।' : (fbErr.message ? fbErr.message.replace('Firebase: ', '') : 'Unable to verify admin access');
+      err.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> ${esc(msg)}`;
       err.classList.add('show');
     } finally {
       btn.disabled = false;
@@ -788,7 +826,7 @@ function initApp(){
 }
 
 // PANES
-const PINFO={dashboard:{t:'Dashboard',s:'Overview of your business'},operators:{t:'Operators & Staff',s:'CSC operator network overview'},customers:{t:'Customer Management',s:'Manage customer records & orders'},transactions:{t:'Transaction Ledger',s:'Income & expense tracking'},services:{t:'Website Services',s:'Manage services shown on the website'},schemes:{t:'Govt Scheme Updates',s:'Publish welfare scheme news'},jobs:{t:'Job Notice Board',s:'Post government job alerts'},reports:{t:'Business Reports',s:'Analytics & financial summary'},settings:{t:'Settings',s:'Admin credentials & data management'}};
+const PINFO={reviewlink:{t:'ReviewLink Manager',s:'Create and manage QR boards in your Cycafe workspace'},dashboard:{t:'Dashboard',s:'Overview of your business'},operators:{t:'Operators & Staff',s:'CSC operator network overview'},customers:{t:'Customer Management',s:'Manage customer records & orders'},transactions:{t:'Transaction Ledger',s:'Income & expense tracking'},services:{t:'Website Services',s:'Manage services shown on the website'},schemes:{t:'Govt Scheme Updates',s:'Publish welfare scheme news'},jobs:{t:'Job Notice Board',s:'Post government job alerts'},reports:{t:'Business Reports',s:'Analytics & financial summary'},settings:{t:'Settings',s:'Admin credentials & data management'}};
 function showPane(nm){
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -1096,5 +1134,7 @@ function clearTxns(){if(!confirm('DELETE ALL transaction records?'))return;sl(K.
 function clearCusts(){if(!confirm('DELETE ALL customer records?'))return;sl(K.custs,[]);toast('Customer records cleared.')}
 </script>
 <script src="admin-content.js?v=14"></script>
+<div id="rl-print-root" class="rl-print-only"></div>
+<script src="reviewlink-admin.js?v=1"></script>
 </body>
 </html>

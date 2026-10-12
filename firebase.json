@@ -1,4 +1,12 @@
 {
+  "hosting": {
+    "public": "dist/cycafe",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "headers": [
+      {"source": "/review.html", "headers": [{"key": "Cache-Control", "value": "no-store"}]},
+      {"source": "**/*.js", "headers": [{"key": "Cache-Control", "value": "public, max-age=0, must-revalidate"}]}
+    ]
+  },
   "firestore": {
     "rules": "firestore.rules"
   },
